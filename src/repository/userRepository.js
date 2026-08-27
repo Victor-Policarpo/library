@@ -30,6 +30,19 @@ export const getUserByIdDatabase = async (id) => {
     return rows[0];
 };
 
+export const getUserByEmailDatabase = async (email) => {
+    if (!email) {
+        throw new Error("Email is required");
+    }
+    const [rows] = await db.execute(
+        "SELECT id, name, email, password FROM users WHERE email = ?",
+        [email]
+    );
+
+    return rows[0];
+};
+
+
 export const updateUserDatabase = async (id, name, email) => {
     if (!id || !name || !email) {
         throw new Error("ID, name, and email are required");
