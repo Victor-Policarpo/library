@@ -1,29 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { ErrorBox } from "../components/ui/Feedback.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import { getErrorMessage } from "../utils/errors.js";
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   const { login, sessionExpired, clearSessionExpired } = useAuth();
+  const toast = useToast();
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    if (sessionExpired) {
+      toast.warning("Sua sessão expirou. Faça login novamente.");
+      clearSessionExpired();
+    }
+  }, [sessionExpired, clearSessionExpired, toast]);
+
+  useEffect(() => {
+    if (location.state?.registered) {
+      toast.success("Conta criada com sucesso! Faça login para continuar.");
+      navigate(location.pathname, { replace: true, state: null });
+    }
+  }, [location.pathname, location.state?.registered, navigate, toast]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
-    setError("");
     try {
       await login(email, password);
       const from = location.state?.from?.pathname || "/libraries";
       navigate(from, { replace: true });
     } catch (err) {
-      setError(getErrorMessage(err, "Falha no login. Verifique email e senha."));
+      toast.error(getErrorMessage(err, "Falha no login. Verifique email e senha."));
     } finally {
       setSubmitting(false);
     }
@@ -34,16 +47,6 @@ export default function Login() {
       <form className="card login-card" onSubmit={handleSubmit}>
         <h1>Biblioteca</h1>
         <p>Entre para acessar o sistema.</p>
-
-        {sessionExpired && (
-          <div className="notice" onClick={clearSessionExpired}>
-            Sua sessão expirou. Faça login novamente.
-          </div>
-        )}
-        {location.state?.registered && (
-          <div className="notice">Conta criada com sucesso! Faça login para continuar.</div>
-        )}
-        {error && <ErrorBox message={error} />}
 
         <label>
           Email

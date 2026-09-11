@@ -25,7 +25,11 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  const handleUnauthorized = useCallback(() => logout({ expired: true }), [logout]);
+  const handleUnauthorized = useCallback(() => {
+    if (localStorage.getItem(TOKEN_KEY)) {
+      logout({ expired: true });
+    }
+  }, [logout]);
 
   useEffect(() => {
     setUnauthorizedHandler(handleUnauthorized);

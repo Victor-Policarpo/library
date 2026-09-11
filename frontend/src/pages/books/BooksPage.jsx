@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ErrorBox } from "../../components/ui/Feedback.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 import { bookService } from "../../services/bookService.js";
 import { getErrorMessage } from "../../utils/errors.js";
 import BookForm from "./BookForm.jsx";
@@ -8,26 +8,22 @@ import BookList from "./BookList.jsx";
 export default function BooksPage() {
   const [mode, setMode] = useState("list");
   const [editingBook, setEditingBook] = useState(null);
-  const [notice, setNotice] = useState("");
   const [listKey, setListKey] = useState(0);
-  const [error, setError] = useState("");
+
+  const toast = useToast();
 
   const openCreate = () => {
     setEditingBook(null);
     setMode("create");
-    setNotice("");
-    setError("");
   };
 
   const openEdit = (book) => {
     setEditingBook(book);
     setMode("edit");
-    setNotice("");
-    setError("");
   };
 
   const handleSaved = (message) => {
-    setNotice(message);
+    toast.success(message);
     setMode("list");
     setListKey((key) => key + 1);
   };
@@ -36,13 +32,12 @@ export default function BooksPage() {
     if (!window.confirm("Excluir este livro?")) {
       return;
     }
-    setError("");
     try {
       await bookService.remove(id);
-      setNotice("Livro excluído com sucesso.");
+      toast.success("Livro excluído com sucesso.");
       setListKey((key) => key + 1);
     } catch (err) {
-      setError(getErrorMessage(err, "Falha ao excluir livro."));
+      toast.error(getErrorMessage(err, "Falha ao excluir livro."));
     }
   };
 
@@ -67,9 +62,6 @@ export default function BooksPage() {
           Novo Livro
         </button>
       </div>
-
-      {notice && <div className="notice">{notice}</div>}
-      {error && <ErrorBox message={error} />}
 
       <BookList key={listKey} onEdit={openEdit} onDelete={handleDelete} />
     </div>

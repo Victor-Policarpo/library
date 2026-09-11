@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ErrorBox } from "../components/ui/Feedback.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { userService } from "../services/userService.js";
 import { getErrorMessage } from "../utils/errors.js";
 
@@ -14,6 +15,7 @@ export default function Register() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  const toast = useToast();
   const navigate = useNavigate();
 
   const handleChange = (event) => {
@@ -44,7 +46,8 @@ export default function Register() {
       await userService.create(payload);
       navigate("/login", { replace: true, state: { registered: true } });
     } catch (err) {
-      setError(getErrorMessage(err, "Falha ao criar a conta."));
+      toast.error(getErrorMessage(err, "Falha ao criar a conta."));
+      setError("");
     } finally {
       setSubmitting(false);
     }

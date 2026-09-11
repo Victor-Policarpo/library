@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { ErrorBox, Loading } from "../components/ui/Feedback.jsx";
+import { useToast } from "../context/ToastContext.jsx";
 import { useAuth } from "../hooks/useAuth.js";
 import { userService } from "../services/userService.js";
 import { getErrorMessage } from "../utils/errors.js";
@@ -15,8 +16,9 @@ export default function Profile() {
 
   const [form, setForm] = useState({ name: "", email: "" });
   const [saveError, setSaveError] = useState("");
-  const [notice, setNotice] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const toast = useToast();
 
   useEffect(() => {
     let canceled = false;
@@ -61,15 +63,15 @@ export default function Profile() {
     }
     setSaving(true);
     setSaveError("");
-    setNotice("");
     try {
       await userService.update(userId, {
         name: form.name.trim(),
         email: form.email.trim(),
       });
-      setNotice("Dados atualizados com sucesso.");
+      toast.success("Dados atualizados com sucesso.");
     } catch (err) {
-      setSaveError(getErrorMessage(err, "Falha ao atualizar seus dados."));
+      toast.error(getErrorMessage(err, "Falha ao atualizar seus dados."));
+      setSaveError("");
     } finally {
       setSaving(false);
     }
@@ -93,7 +95,6 @@ export default function Profile() {
             Edite os campos permitidos pela API (senha não pode ser alterada por aqui).
           </p>
 
-          {notice && <div className="notice">{notice}</div>}
           {saveError && <ErrorBox message={saveError} />}
 
           <label>

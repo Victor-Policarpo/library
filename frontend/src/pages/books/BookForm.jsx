@@ -1,6 +1,7 @@
 import { useState } from "react";
 import LibrarySearch from "../../components/LibrarySearch.jsx";
 import { ErrorBox } from "../../components/ui/Feedback.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 import { bookService } from "../../services/bookService.js";
 import { getErrorMessage } from "../../utils/errors.js";
 
@@ -20,6 +21,8 @@ export default function BookForm({ book = null, onCancel, onSaved }) {
   const [libraryId, setLibraryId] = useState(book ? Number(book.library_id) : null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const toast = useToast();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -66,7 +69,8 @@ export default function BookForm({ book = null, onCancel, onSaved }) {
         onSaved("Livro criado com sucesso.");
       }
     } catch (err) {
-      setError(getErrorMessage(err, "Falha ao salvar livro."));
+      toast.error(getErrorMessage(err, "Falha ao salvar livro."));
+      setError("");
     } finally {
       setSubmitting(false);
     }

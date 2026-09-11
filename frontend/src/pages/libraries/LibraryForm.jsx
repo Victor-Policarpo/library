@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { ErrorBox } from "../../components/ui/Feedback.jsx";
+import { useToast } from "../../context/ToastContext.jsx";
 import { libraryService } from "../../services/libraryService.js";
 import { getErrorMessage } from "../../utils/errors.js";
 
@@ -11,6 +12,8 @@ export default function LibraryForm({ library = null, onCancel, onSaved }) {
   );
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const toast = useToast();
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -35,7 +38,8 @@ export default function LibraryForm({ library = null, onCancel, onSaved }) {
         onSaved("Biblioteca criada com sucesso.");
       }
     } catch (err) {
-      setError(getErrorMessage(err, "Falha ao salvar biblioteca."));
+      toast.error(getErrorMessage(err, "Falha ao salvar biblioteca."));
+      setError("");
     } finally {
       setSubmitting(false);
     }
